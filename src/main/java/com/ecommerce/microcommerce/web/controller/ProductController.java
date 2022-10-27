@@ -2,9 +2,11 @@ package com.ecommerce.microcommerce.web.controller;
 
 import com.ecommerce.microcommerce.model.Product;
 import com.ecommerce.microcommerce.web.dao.ProductDao;
+import com.ecommerce.microcommerce.web.exceptions.ProduitIntrouvableException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
@@ -12,20 +14,18 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
+
 
 @RestController
 public class ProductController {
-    private final ProductDao productDao;
-
-    public ProductController(ProductDao productDao) {
-        this.productDao = productDao;
-    }
+    @Autowired
+    private ProductDao productDao;
 
     //Récupérer la liste des produits - filtre dynamique
-    @GetMapping("/Produits")
+    @RequestMapping(value = "/Produits", method = RequestMethod.GET)
     public MappingJacksonValue listeProduits() {
-        List<Product> produits = productDao.findAll();
+        // findAll est une opération JpaRepository qui permet de récupérer toutes les données de l'entité concernée. findAll() retourne un Iterable
+        Iterable<Product> produits = productDao.findAll();
         // SimpleBeanPropertyFilter permet d'établir les règles de filtrage sur un Bean donné
         // serializeAllExcept exclut uniquement les propriétés que nous souhaitons ignorer
         SimpleBeanPropertyFilter monFiltre = SimpleBeanPropertyFilter.serializeAllExcept("prixAchat");
@@ -39,16 +39,25 @@ public class ProductController {
         return produitsFiltres;
     }
 
+    // Récupérer un produit par son id
     @GetMapping(value = "/Produits/{id}")
     public Product afficherUnProduit(@PathVariable int id) {
-        return productDao.findById(id);
+        Product produit = productDao.findById(id);
+        if(produit==null) throw new ProduitIntrouvableException("Le produit avec l'id " + id + " est INTROUVABLE. Écran Bleu si je pouvais.");
+        return produit;
     }
 
+    @GetMapping(value = "test/produits/{prixLimit}")
+    public List<Product> testeDeRequetes(@PathVariable int prixLimit) {
+        return productDao.findByPrixGreaterThan(400);
+    }
+
+    // Ajouter un produit
     @PostMapping(value = "/Produits")
     // ResponseEntity est une classe qui hérite de HttpEntity, qui permet de définir le code HTTP à retourner
-    public ResponseEntity<Product> ajouterProduit(@RequestBody Product product){
+    public ResponseEntity<Void> ajouterProduit(@RequestBody Product product) {
         Product productAdded = productDao.save(product);
-        if (Objects.isNull(productAdded)){
+        if (productAdded == null) {
             // noContent permet de retourner le code 204 dans le cas où le produit ajouté est vide ou n'existe pas
             // build : construit le header et y ajoute le code choisi
             return ResponseEntity.noContent().build();
@@ -59,6 +68,17 @@ public class ProductController {
                 .buildAndExpand(productAdded.getId())
                 .toUri();
         return ResponseEntity.created(location).build();
+    }
+
+    @DeleteMapping (value = "/Produits/{id}")
+    public void supprimerProduit(@PathVariable int id) {
+        productDao.deleteById(id);
+    }
+
+    @PutMapping (value = "/Produits")
+    public void updateProduit(@RequestBody Product product)
+    {
+        productDao.save(product);
     }
 }
 
