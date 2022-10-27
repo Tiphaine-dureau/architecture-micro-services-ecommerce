@@ -29,9 +29,12 @@ public class ProductController {
     }
 
     @PostMapping(value = "/Produits")
+    // ResponseEntity est une classe qui hérite de HttpEntity, qui permet de définir le code HTTP à retourner
     public ResponseEntity<Product> ajouterProduit(@RequestBody Product product){
         Product productAdded = productDao.save(product);
         if (Objects.isNull(productAdded)){
+            // noContent permet de retourner le code 204 dans le cas où le produit ajouté est vide ou n'existe pas
+            // build : construit le header et y ajoute le code choisi
             return ResponseEntity.noContent().build();
         }
         URI location = ServletUriComponentsBuilder
