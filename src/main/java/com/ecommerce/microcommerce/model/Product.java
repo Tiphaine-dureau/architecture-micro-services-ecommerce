@@ -1,8 +1,17 @@
 package com.ecommerce.microcommerce.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 
-@JsonFilter("monFiltreDynamique")
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+// @JsonFilter("monFiltreDynamique")
+// @Entity permet que la classe soit scannée et prise en compte
+@Entity
 public class Product {
+    // @Id et @GeneratedValue afin que l'attribut id soit identifié en tant que clé unique autogénérée.
+    @Id
+    @GeneratedValue
     private int id;
     private String nom;
     private int prix;
