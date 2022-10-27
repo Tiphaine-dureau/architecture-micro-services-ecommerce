@@ -6,6 +6,8 @@ import com.ecommerce.microcommerce.web.exceptions.ProduitIntrouvableException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -16,11 +18,15 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
-
+@Api("API pour les opérations CRUD sur les produits")
 @RestController
 public class ProductController {
     @Autowired
     private ProductDao productDao;
+
+    public ProductController(ProductDao productDao){
+        this.productDao = productDao;
+    }
 
     //Récupérer la liste des produits - filtre dynamique
     @RequestMapping(value = "/Produits", method = RequestMethod.GET)
@@ -41,6 +47,7 @@ public class ProductController {
     }
 
     // Récupérer un produit par son id
+    @ApiOperation(value = "Récupère un produit grâce à son ID à condition que celui-ci soit en stock")
     @GetMapping(value = "/Produits/{id}")
     public Product afficherUnProduit(@PathVariable int id) {
         Product produit = productDao.findById(id);
@@ -77,8 +84,7 @@ public class ProductController {
     }
 
     @PutMapping (value = "/Produits")
-    public void updateProduit(@RequestBody Product product)
-    {
+    public void updateProduit(@RequestBody Product product) {
         productDao.save(product);
     }
 }
