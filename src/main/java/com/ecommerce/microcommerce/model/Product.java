@@ -5,17 +5,19 @@ public class Product {
     private String nom;
     private int prix;
 
+    // information que nous ne souhaitons pas exposer
+    private int prixAchat;
+
+    // Constructeur par défaut
     public Product() {
     }
 
-    public Product(int id, String nom, int prix) {
-
+    // Constructeur pour les tests
+    public Product(int id, String nom, int prix, int prixAchat) {
         this.id = id;
-
         this.nom = nom;
-
         this.prix = prix;
-
+        this.prixAchat = prixAchat;
     }
 
     public int getId() {
@@ -40,6 +42,14 @@ public class Product {
 
     public void setPrix(int prix) {
         this.prix = prix;
+    }
+
+    public int getPrixAchat() {
+        return prixAchat;
+    }
+
+    public void setPrixAchat(int prixAchat) {
+        this.prixAchat = prixAchat;
     }
 
     @Override
