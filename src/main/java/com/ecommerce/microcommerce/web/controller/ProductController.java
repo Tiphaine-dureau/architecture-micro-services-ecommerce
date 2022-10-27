@@ -2,7 +2,11 @@ package com.ecommerce.microcommerce.web.controller;
 
 import com.ecommerce.microcommerce.model.Product;
 import com.ecommerce.microcommerce.web.dao.ProductDao;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -18,9 +22,21 @@ public class ProductController {
         this.productDao = productDao;
     }
 
+    //Récupérer la liste des produits - filtre dynamique
     @GetMapping("/Produits")
-    public List<Product> listeProduits() {
-        return productDao.findAll();
+    public MappingJacksonValue listeProduits() {
+        List<Product> produits = productDao.findAll();
+        // SimpleBeanPropertyFilter permet d'établir les règles de filtrage sur un Bean donné
+        // serializeAllExcept exclut uniquement les propriétés que nous souhaitons ignorer
+        SimpleBeanPropertyFilter monFiltre = SimpleBeanPropertyFilter.serializeAllExcept("prixAchat");
+        // SimpleFilterProvider indique à Jackson le Bean ou il doit appliquer le filter :
+        // ici peut s'appliquer à tous les Bean annotés avec monFiltreDynamique
+        FilterProvider listDeNosFiltres = new SimpleFilterProvider().addFilter("monFiltreDynamique", monFiltre);
+        // Mise au format MappingJacksonValue du filtre pour avoir accès aux méthodes qui nous intéressent : ici setFilters()
+        MappingJacksonValue produitsFiltres = new MappingJacksonValue(produits);
+        produitsFiltres.setFilters(listDeNosFiltres);
+        // retour de la liste filtrée
+        return produitsFiltres;
     }
 
     @GetMapping(value = "/Produits/{id}")
