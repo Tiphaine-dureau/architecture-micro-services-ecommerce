@@ -12,6 +12,7 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class ProductController {
     // Ajouter un produit
     @PostMapping(value = "/Produits")
     // ResponseEntity est une classe qui hérite de HttpEntity, qui permet de définir le code HTTP à retourner
-    public ResponseEntity<Void> ajouterProduit(@RequestBody Product product) {
+    public ResponseEntity<Void> ajouterProduit(@Valid @RequestBody Product product) {
         Product productAdded = productDao.save(product);
         if (productAdded == null) {
             // noContent permet de retourner le code 204 dans le cas où le produit ajouté est vide ou n'existe pas
